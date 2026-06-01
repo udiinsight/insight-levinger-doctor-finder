@@ -30,6 +30,9 @@ Built to the Dr. Levinger Design System (blue #104DA8, FB Reforma, RTL).
 
 == Changelog ==
 
+= 1.1.1 =
+* fix: WP Rocket compatibility — exclude finder assets from JS delay/minify and CSS minify so the wizard hydrates immediately (no "click to load").
+
 = 1.1.0 =
 * feat: stepped wizard (goal, age, glasses/contacts, prescription, cylinder, location, language) for a personalized feel.
 * Only location + language filter the results; the other answers are appended to the WhatsApp exam message so the clinic gets full context.

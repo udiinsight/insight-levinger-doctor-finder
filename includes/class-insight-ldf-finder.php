@@ -24,6 +24,112 @@ class Insight_LDF_Finder {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_assets' ) );
 		add_action( 'save_post_doctor', array( 'Insight_LDF_Query', 'clear_cache' ) );
 		add_action( 'save_post_medical-center', array( 'Insight_LDF_Query', 'clear_cache' ) );
+
+		// Keep WP Rocket (and similar optimizers) from delaying/minifying our bundle,
+		// which otherwise leaves the finder un-hydrated until first interaction.
+		add_filter( 'script_loader_tag', array( __CLASS__, 'untouchable_script' ), 10, 2 );
+		add_filter( 'style_loader_tag', array( __CLASS__, 'untouchable_style' ), 10, 2 );
+		add_filter( 'rocket_excluded_inline_js_content', array( __CLASS__, 'rocket_inline_exclusions' ) );
+		add_filter( 'rocket_minify_excluded_external_js', array( __CLASS__, 'rocket_minify_js_exclusions' ) );
+		add_filter( 'rocket_exclude_css', array( __CLASS__, 'rocket_css_exclusions' ) );
+		add_filter( 'rocket_delay_js_exclusions', array( __CLASS__, 'rocket_delay_js_exclusions' ) );
+	}
+
+	/**
+	 * Add no-minify / no-defer / no-delay attributes to our external script tag.
+	 *
+	 * @param string $tag    Script tag HTML.
+	 * @param string $handle Script handle.
+	 * @return string
+	 */
+	public static function untouchable_script( $tag, $handle ) {
+		if ( self::HANDLE !== $handle ) {
+			return $tag;
+		}
+		$attrs = ' data-no-minify="1" data-no-defer="1" data-no-optimize="1" data-cfasync="false" data-wpmeteor-nooptimize="true"';
+		return (string) preg_replace_callback(
+			'/<script\b([^>]*)>/i',
+			function ( $m ) use ( $attrs ) {
+				if ( false === strpos( $m[1], 'src=' ) ) {
+					return $m[0];
+				}
+				return '<script' . $attrs . $m[1] . '>';
+			},
+			$tag
+		);
+	}
+
+	/**
+	 * Same for our stylesheet link.
+	 *
+	 * @param string $tag    Link tag HTML.
+	 * @param string $handle Style handle.
+	 * @return string
+	 */
+	public static function untouchable_style( $tag, $handle ) {
+		if ( self::HANDLE !== $handle ) {
+			return $tag;
+		}
+		$attrs = ' data-no-minify="1" data-no-optimize="1" data-cfasync="false"';
+		return (string) preg_replace_callback(
+			'/<link\b([^>]*)>/i',
+			function ( $m ) use ( $attrs ) {
+				if ( false === strpos( $m[1], 'href=' ) ) {
+					return $m[0];
+				}
+				return '<link' . $attrs . $m[1] . '>';
+			},
+			$tag
+		);
+	}
+
+	/**
+	 * Exclude our localized inline data from Rocket inline-JS optimization.
+	 *
+	 * @param array $excluded Patterns.
+	 * @return array
+	 */
+	public static function rocket_inline_exclusions( $excluded ) {
+		$excluded   = is_array( $excluded ) ? $excluded : array();
+		$excluded[] = 'INSIGHT_LDF';
+		return $excluded;
+	}
+
+	/**
+	 * Exclude finder.js from Rocket JS minify/combine.
+	 *
+	 * @param array $excluded Patterns.
+	 * @return array
+	 */
+	public static function rocket_minify_js_exclusions( $excluded ) {
+		$excluded   = is_array( $excluded ) ? $excluded : array();
+		$excluded[] = 'insight-levinger-doctor-finder/assets/js/finder.js';
+		return $excluded;
+	}
+
+	/**
+	 * Exclude finder.css from Rocket CSS minify/combine (protects @font-face URLs).
+	 *
+	 * @param array $excluded Patterns.
+	 * @return array
+	 */
+	public static function rocket_css_exclusions( $excluded ) {
+		$excluded   = is_array( $excluded ) ? $excluded : array();
+		$excluded[] = 'insight-levinger-doctor-finder/assets/css/finder.css';
+		return $excluded;
+	}
+
+	/**
+	 * Exclude finder.js + our inline data from Rocket "Delay JavaScript Execution".
+	 *
+	 * @param array $excluded Patterns.
+	 * @return array
+	 */
+	public static function rocket_delay_js_exclusions( $excluded ) {
+		$excluded   = is_array( $excluded ) ? $excluded : array();
+		$excluded[] = 'insight-levinger-doctor-finder/assets/js/finder.js';
+		$excluded[] = 'INSIGHT_LDF';
+		return $excluded;
 	}
 
 	/**
