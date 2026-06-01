@@ -30,5 +30,10 @@ Built to the Dr. Levinger Design System (blue #104DA8, FB Reforma, RTL).
 
 == Changelog ==
 
+= 1.1.0 =
+* feat: stepped wizard (goal, age, glasses/contacts, prescription, cylinder, location, language) for a personalized feel.
+* Only location + language filter the results; the other answers are appended to the WhatsApp exam message so the clinic gets full context.
+* Lucide-style line-icon option cards, progress bar, "not sure" path.
+
 = 1.0.0 =
 * Initial release: [doctor_finder] shortcode; clinic + language filters; branded RTL doctor cards; WhatsApp suitability-exam CTA; no-JS fallback doctor list.
