@@ -3,7 +3,7 @@
  * Plugin Name: Insight - Levinger - Doctor Finder
  * Plugin URI: https://github.com/udiinsight/insight-levinger-doctor-finder
  * Description: Guided finder for Dr. Levinger laser glasses-removal surgeons. Filters by clinic and language and renders branded doctor cards via the [doctor_finder] shortcode.
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: Insight Marketing
  * Author URI: https://insight-marketing.co.il
  * Text Domain: insight-levinger-doctor-finder
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'INSIGHT_LEVINGER_DOCTOR_FINDER_VERSION', '1.1.1' );
+define( 'INSIGHT_LEVINGER_DOCTOR_FINDER_VERSION', '1.1.2' );
 define( 'INSIGHT_LEVINGER_DOCTOR_FINDER_PATH', plugin_dir_path( __FILE__ ) );
 define( 'INSIGHT_LEVINGER_DOCTOR_FINDER_URL', plugin_dir_url( __FILE__ ) );
 

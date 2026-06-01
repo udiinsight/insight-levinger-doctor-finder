@@ -76,6 +76,27 @@ class Insight_LDF_Query {
 	}
 
 	/**
+	 * Clean, short display label for a center (chips + card clinic line). Falls back to
+	 * the post title for any center not in the map. Filterable.
+	 *
+	 * @param int    $cid      Center post ID.
+	 * @param string $fallback Decoded post title.
+	 * @return string
+	 */
+	public static function center_label( $cid, $fallback ) {
+		$labels = apply_filters(
+			'insight_ldf_center_labels',
+			array(
+				211 => 'ירושלים',
+				214 => 'תל אביב - עזריאלי',
+				212 => 'חיפה חוצות המפרץ',
+				208 => 'באר שבע',
+			)
+		);
+		return isset( $labels[ $cid ] ) ? (string) $labels[ $cid ] : $fallback;
+	}
+
+	/**
 	 * Build the dataset from the doctor CPT.
 	 *
 	 * @return array{doctors:array,locations:array,languages:array}
@@ -142,7 +163,7 @@ class Insight_LDF_Query {
 						continue; // Only laser-eligible branches (see LASER_CENTER_IDS).
 					}
 					$doc_centers[]   = $cid;
-					$centers[ $cid ] = html_entity_decode( wp_strip_all_tags( get_the_title( $cid ) ), ENT_QUOTES, 'UTF-8' );
+					$centers[ $cid ] = self::center_label( $cid, html_entity_decode( wp_strip_all_tags( get_the_title( $cid ) ), ENT_QUOTES, 'UTF-8' ) );
 				}
 			}
 

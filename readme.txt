@@ -30,6 +30,9 @@ Built to the Dr. Levinger Design System (blue #104DA8, FB Reforma, RTL).
 
 == Changelog ==
 
+= 1.1.2 =
+* Clean, short clinic labels in the location filter and on cards: ירושלים, תל אביב - עזריאלי, באר שבע, חיפה חוצות המפרץ.
+
 = 1.1.1 =
 * fix: WP Rocket compatibility — exclude finder assets from JS delay/minify and CSS minify so the wizard hydrates immediately (no "click to load").
 
