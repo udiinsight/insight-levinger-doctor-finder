@@ -30,6 +30,9 @@ Built to the Dr. Levinger Design System (blue #104DA8, FB Reforma, RTL).
 
 == Changelog ==
 
+= 1.1.5 =
+* fix: asset cache-busting now uses file mtime, so CSS/JS changes always load (previously the version constant lagged the header, freezing the ?ver). This makes the 1.1.3/1.1.4 front-end changes actually load in browsers.
+
 = 1.1.4 =
 * Header: centered, with an eyebrow tag ("התאמת רופא אישית" + sparkle icon); heading is now an <h1> sized with var(--font-h2).
 

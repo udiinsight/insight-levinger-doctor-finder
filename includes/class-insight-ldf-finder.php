@@ -136,9 +136,15 @@ class Insight_LDF_Finder {
 	 * Register (not enqueue) the assets so the shortcode can enqueue on demand.
 	 */
 	public static function register_assets() {
-		$ver = INSIGHT_LEVINGER_DOCTOR_FINDER_VERSION;
-		wp_register_style( self::HANDLE, INSIGHT_LEVINGER_DOCTOR_FINDER_URL . 'assets/css/finder.css', array(), $ver );
-		wp_register_script( self::HANDLE, INSIGHT_LEVINGER_DOCTOR_FINDER_URL . 'assets/js/finder.js', array(), $ver, true );
+		$ver      = INSIGHT_LEVINGER_DOCTOR_FINDER_VERSION;
+		$css_path = INSIGHT_LEVINGER_DOCTOR_FINDER_PATH . 'assets/css/finder.css';
+		$js_path  = INSIGHT_LEVINGER_DOCTOR_FINDER_PATH . 'assets/js/finder.js';
+		// Use file mtime as the asset version so every deploy busts the cache,
+		// independent of the plugin version bump.
+		$css_ver = is_readable( $css_path ) ? (string) filemtime( $css_path ) : $ver;
+		$js_ver  = is_readable( $js_path ) ? (string) filemtime( $js_path ) : $ver;
+		wp_register_style( self::HANDLE, INSIGHT_LEVINGER_DOCTOR_FINDER_URL . 'assets/css/finder.css', array(), $css_ver );
+		wp_register_script( self::HANDLE, INSIGHT_LEVINGER_DOCTOR_FINDER_URL . 'assets/js/finder.js', array(), $js_ver, true );
 	}
 
 	/**
