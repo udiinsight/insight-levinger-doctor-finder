@@ -30,6 +30,9 @@ Built to the Dr. Levinger Design System (blue #104DA8, FB Reforma, RTL).
 
 == Changelog ==
 
+= 1.1.6 =
+* fix: bake asset version into the URL as ?v= (WP Rocket strips ?ver= on this host). This finally lets CSS/JS updates reach browsers — header, no-all, and language-fallback changes now render.
+
 = 1.1.5 =
 * fix: asset cache-busting now uses file mtime, so CSS/JS changes always load (previously the version constant lagged the header, freezing the ?ver). This makes the 1.1.3/1.1.4 front-end changes actually load in browsers.
 

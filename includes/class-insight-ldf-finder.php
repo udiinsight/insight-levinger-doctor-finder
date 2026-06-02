@@ -143,8 +143,10 @@ class Insight_LDF_Finder {
 		// independent of the plugin version bump.
 		$css_ver = is_readable( $css_path ) ? (string) filemtime( $css_path ) : $ver;
 		$js_ver  = is_readable( $js_path ) ? (string) filemtime( $js_path ) : $ver;
-		wp_register_style( self::HANDLE, INSIGHT_LEVINGER_DOCTOR_FINDER_URL . 'assets/css/finder.css', array(), $css_ver );
-		wp_register_script( self::HANDLE, INSIGHT_LEVINGER_DOCTOR_FINDER_URL . 'assets/js/finder.js', array(), $js_ver, true );
+		// WP Rocket strips the standard ?ver= arg on this host, freezing the URL so browsers
+		// cache forever. Bake the mtime into the URL as ?v= and pass null so WP adds nothing.
+		wp_register_style( self::HANDLE, INSIGHT_LEVINGER_DOCTOR_FINDER_URL . 'assets/css/finder.css?v=' . $css_ver, array(), null );
+		wp_register_script( self::HANDLE, INSIGHT_LEVINGER_DOCTOR_FINDER_URL . 'assets/js/finder.js?v=' . $js_ver, array(), null, true );
 	}
 
 	/**
