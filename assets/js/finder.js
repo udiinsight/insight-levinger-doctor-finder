@@ -29,7 +29,8 @@
 		layers: '<path d="M12 2 21 7l-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/>',
 		pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
 		info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
-		check: '<path d="M20 6 9 17l-5-5"/>'
+		check: '<path d="M20 6 9 17l-5-5"/>',
+		sparkle: '<path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/>'
 	};
 	function svg(name, size) {
 		size = size || 22;
@@ -180,7 +181,7 @@
 	function mount() {
 		root.innerHTML =
 			'<div class="idf-app">' +
-			'<div class="idf-head"><h2>מצאו את הרופא המתאים לכם</h2><p>ענו על כמה שאלות קצרות, ואנחנו נמצא עבורכם את הרופאים המתאימים.</p></div>' +
+			'<div class="idf-head"><span class="idf-eyebrow">' + svg('sparkle', 15) + ' התאמת רופא אישית</span><h1>מצאו את הרופא המתאים לכם</h1><p>ענו על כמה שאלות קצרות, ואנחנו נמצא עבורכם את הרופאים המתאימים.</p></div>' +
 			'<div class="idf-wizard">' +
 			'<div id="idf-question">' +
 			'<div class="idf-progress-row"><span class="idf-step-lbl" id="idf-steplbl"></span><button type="button" class="idf-back" id="idf-back" style="visibility:hidden">חזרה ←</button></div>' +

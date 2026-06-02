@@ -30,6 +30,9 @@ Built to the Dr. Levinger Design System (blue #104DA8, FB Reforma, RTL).
 
 == Changelog ==
 
+= 1.1.4 =
+* Header: centered, with an eyebrow tag ("התאמת רופא אישית" + sparkle icon); heading is now an <h1> sized with var(--font-h2).
+
 = 1.1.3 =
 * Clinic labels are now city names only: ירושלים, תל אביב, באר שבע, חיפה (fixed order).
 * Removed the "all branches" option — a clinic must be chosen.
