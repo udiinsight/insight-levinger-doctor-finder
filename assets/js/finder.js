@@ -64,11 +64,9 @@
 	function optsFor(key) {
 		var step = STEPS[key];
 		if (step.dynamic === 'location') {
-			return [{ v: '', label: 'כל הסניפים' }].concat(
-				DATA.locations.map(function (l) {
-					return { v: String(l.id), label: l.name };
-				})
-			);
+			return DATA.locations.map(function (l) {
+				return { v: String(l.id), label: l.name };
+			});
 		}
 		if (step.dynamic === 'language') {
 			return [{ v: '', label: 'אין העדפה' }].concat(
@@ -159,17 +157,17 @@
 	}
 
 	/* ---- filtering (location + language ONLY) ---- */
-	function filtered() {
+	function filterBy(city, lang) {
 		var list = DATA.doctors.slice();
-		if (answers.location) {
-			var cid = parseInt(answers.location, 10);
+		if (city) {
+			var cid = parseInt(city, 10);
 			list = list.filter(function (d) {
 				return (d.centers || []).indexOf(cid) !== -1;
 			});
 		}
-		if (answers.language) {
+		if (lang) {
 			list = list.filter(function (d) {
-				return (d.langs || []).indexOf(answers.language) !== -1;
+				return (d.langs || []).indexOf(lang) !== -1;
 			});
 		}
 		return list
@@ -294,35 +292,41 @@
 		if (!box) {
 			return;
 		}
-		var list = filtered();
+		var cityName = answers.location ? centerName(parseInt(answers.location, 10)) : '';
+		var lang = answers.language;
+		var list = filterBy(answers.location, lang);
+		var relaxedLang = false;
+		if (!list.length && lang) {
+			var alt = filterBy(answers.location, '');
+			if (alt.length) {
+				list = alt;
+				relaxedLang = true;
+			}
+		}
 		var unsure = answers.goal === 'not_sure';
-		var cityTxt = answers.location ? ' ב' + centerName(parseInt(answers.location, 10)) : '';
+		var cityTxt = cityName ? ' ב' + cityName : '';
 
 		var notsure = unsure
 			? '<div class="idf-notsure"><h3>עוד לא בטוחים? זה בסדר גמור.</h3>' +
 			'<p>בדיקת התאמה היא הדרך הבטוחה לדעת בדיוק מה מתאים לכם, ללא התחייבות. בינתיים ריכזנו עבורכם את הרופאים הרלוונטיים.</p>' +
-			'<a class="idf-btn idf-btn-white" href="' + waUrl(waMessage('', answers.location ? centerName(parseInt(answers.location, 10)) : '')) + '" target="_blank" rel="noopener">תיאום בדיקת התאמה</a></div>'
+			'<a class="idf-btn idf-btn-white" href="' + waUrl(waMessage('', cityName)) + '" target="_blank" rel="noopener">תיאום בדיקת התאמה</a></div>'
 			: '';
 
 		if (!list.length) {
 			box.innerHTML =
 				notsure +
-				'<div class="idf-results"><div class="idf-empty">לא נמצאו רופאים מתאימים לסינון הזה. נסו להרחיב את הבחירה.' +
-				'<div><button type="button" class="idf-btn idf-btn-secondary" id="idf-reset">ניקוי הסינון</button></div></div></div>';
-			var rb = document.getElementById('idf-reset');
-			if (rb) {
-				rb.addEventListener('click', function () {
-					answers.location = '';
-					answers.language = '';
-					renderResults();
-				});
-			}
+				'<div class="idf-results"><div class="idf-empty">לא נמצאו רופאים מתאימים בסניף הזה. נסו לבחור סניף אחר דרך "שינוי התשובות".</div></div>';
 			return;
 		}
+
+		var langNote = relaxedLang
+			? '<div class="idf-empty" style="margin-bottom:18px">לא נמצאו רופאים שדוברים ' + esc(lang) + ' ב' + esc(cityName) + '. הנה הרופאים ב' + esc(cityName) + ':</div>'
+			: '';
 
 		box.innerHTML =
 			notsure +
 			'<div class="idf-results">' +
+			langNote +
 			'<div class="idf-rhead"><h2>' + (unsure ? 'רופאים רלוונטיים' : 'הרופאים שעשויים להתאים לכם') + esc(cityTxt) + '</h2>' +
 			'<div class="idf-count">מציג ' + list.length + ' רופאים</div></div>' +
 			'<div class="idf-grid">' + list.map(card).join('') + '</div>' +

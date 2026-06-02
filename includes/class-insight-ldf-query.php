@@ -26,9 +26,9 @@ class Insight_LDF_Query {
 	 * offered as locations so the finder never implies laser at a branch that does
 	 * not perform it. Laser doctors also practice at other (cataract) centers; those
 	 * are intentionally excluded here. Filterable via `insight_ldf_laser_center_ids`.
-	 *   214 Tel Aviv (Azrieli) · 212 Haifa (Hutzot HaMifratz) · 211 Jerusalem · 208 Beersheba (Sheva Enaim)
+	 *   Display order: 211 Jerusalem · 214 Tel Aviv · 208 Beersheba · 212 Haifa
 	 */
-	const LASER_CENTER_IDS = array( 214, 212, 211, 208 );
+	const LASER_CENTER_IDS = array( 211, 214, 208, 212 );
 
 	/**
 	 * Transient cache key (bump suffix when the data shape changes).
@@ -88,9 +88,9 @@ class Insight_LDF_Query {
 			'insight_ldf_center_labels',
 			array(
 				211 => 'ירושלים',
-				214 => 'תל אביב - עזריאלי',
-				212 => 'חיפה חוצות המפרץ',
+				214 => 'תל אביב',
 				208 => 'באר שבע',
+				212 => 'חיפה',
 			)
 		);
 		return isset( $labels[ $cid ] ) ? (string) $labels[ $cid ] : $fallback;
@@ -181,20 +181,17 @@ class Insight_LDF_Query {
 			);
 		}
 
-		// Location options — distinct centers among the laser doctors, sorted by name.
+		// Location options — in the canonical laser-center order (LASER_CENTER_IDS),
+		// including only centers that actually have laser doctors.
 		$locations = array();
-		foreach ( $centers as $cid => $cname ) {
-			$locations[] = array(
-				'id'   => (int) $cid,
-				'name' => $cname,
-			);
-		}
-		usort(
-			$locations,
-			function ( $a, $b ) {
-				return strcmp( $a['name'], $b['name'] );
+		foreach ( self::laser_center_ids() as $cid ) {
+			if ( isset( $centers[ $cid ] ) ) {
+				$locations[] = array(
+					'id'   => (int) $cid,
+					'name' => $centers[ $cid ],
+				);
 			}
-		);
+		}
 
 		// Language options — preferred order first, then any extras present.
 		$order     = array( 'עברית', 'אנגלית', 'רוסית', 'ערבית', 'צרפתית', 'ספרדית', 'רומנית', 'איטלקית', 'גרמנית' );

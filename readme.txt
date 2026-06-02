@@ -30,6 +30,11 @@ Built to the Dr. Levinger Design System (blue #104DA8, FB Reforma, RTL).
 
 == Changelog ==
 
+= 1.1.3 =
+* Clinic labels are now city names only: ירושלים, תל אביב, באר שבע, חיפה (fixed order).
+* Removed the "all branches" option — a clinic must be chosen.
+* If no doctor at the chosen clinic speaks the selected language, the finder says so and shows that clinic's doctors without the language filter.
+
 = 1.1.2 =
 * Clean, short clinic labels in the location filter and on cards: ירושלים, תל אביב - עזריאלי, באר שבע, חיפה חוצות המפרץ.
 
