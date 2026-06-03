@@ -4,7 +4,7 @@
    Stepped wizard: goal → age → glasses/contacts → number → cylinder
    → location → language → results.
    ONLY location + language filter the doctor list. The other answers are
-   collected for personalization and appended to the WhatsApp exam message.
+   collected for personalization and passed into the contact form (WS Form 11).
    Results are doctor cards only — no diagnosis, no treatment names shown.
    ============================================================ */
 (function () {
@@ -30,13 +30,13 @@
 		pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
 		info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
 		check: '<path d="M20 6 9 17l-5-5"/>',
-		sparkle: '<path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/>'
+		sparkle: '<path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z"/>',
+		calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'
 	};
 	function svg(name, size) {
 		size = size || 22;
 		return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + (ICON[name] || '') + '</svg>';
 	}
-	var WA_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15l-1.4 5 5.1-1.3A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5-4.5s-1.2-1.6-1.2-3 .7-2.1 1-2.4c.2-.3.5-.4.7-.4h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.5-.3.4c-.1.1-.3.3-.1.6s.6 1 1.3 1.7c.9.8 1.6 1 1.9 1.2.3.1.5.1.6-.1l.7-.9c.2-.3.4-.2.6-.1l1.9.9c.2.1.4.2.5.3.1.3.1.7-.1 1.4z"/></svg>';
 
 	/* ---- steps. filter:true means it narrows the doctor list. ---- */
 	var STEPS = {
@@ -120,41 +120,93 @@
 		return (d.centers || []).map(centerName).filter(Boolean);
 	}
 
-	/* ---- WhatsApp message: name + clinic + every collected answer ---- */
-	function waMessage(name, clinic) {
-		var first = 'שלום, הגעתי דרך מאתר רופאי העיניים באתר דר לוינגר. אשמח לתאם בדיקת התאמה';
-		if (name) {
-			first += ' אצל ' + name;
-		}
-		if (clinic) {
-			first += ' בסניף ' + clinic;
-		}
-		first += '.';
-		var det = [];
-		[['goal', 'מטרה'], ['age', 'גיל'], ['wear', 'מרכיב/ה'], ['rx', 'מספר'], ['cyl', 'צילינדר']].forEach(function (p) {
-			if (answers[p[0]]) {
-				det.push(p[1] + ': ' + labelFor(p[0], answers[p[0]]));
-			}
-		});
-		if (answers.language) {
-			det.push('שפה מועדפת: ' + answers.language);
-		}
-		var msg = first;
-		if (det.length) {
-			msg += '\nהפרטים שמילאתי במאתר: ' + det.join(' · ') + '.';
-		}
-		return msg;
-	}
-	function waUrl(msg) {
-		return 'https://api.whatsapp.com/send?phone=' + DATA.waPhone + '&text=' + encodeURIComponent(msg);
-	}
-	function doctorWaUrl(d) {
+	/* ---- context string for the hidden form field (id 240): doctor + clinic + answers ---- */
+	function formContext(d) {
 		var clinic = answers.location ? centerName(parseInt(answers.location, 10)) : '';
-		if (!clinic) {
+		if (d && !clinic) {
 			var cl = doctorClinics(d);
 			clinic = cl.length ? cl[0] : '';
 		}
-		return waUrl(waMessage(d.name, clinic));
+		var parts = [];
+		if (d && d.name) {
+			parts.push('רופא: ' + d.name);
+		}
+		if (clinic) {
+			parts.push('סניף: ' + clinic);
+		}
+		[['goal', 'מטרה'], ['age', 'גיל'], ['wear', 'מרכיב/ה'], ['rx', 'מספר'], ['cyl', 'צילינדר']].forEach(function (p) {
+			if (answers[p[0]]) {
+				parts.push(p[1] + ': ' + labelFor(p[0], answers[p[0]]));
+			}
+		});
+		if (answers.language) {
+			parts.push('שפה מועדפת: ' + answers.language);
+		}
+		return parts.join(' · ');
+	}
+
+	/* ---- inline contact form (WS Form 11) revealed under the chosen button ---- */
+	var formHost = document.getElementById('idf-form-host');
+	var formHome = formHost ? formHost.parentNode : null;
+	var activeTrigger = null;
+
+	function setFormContext(val) {
+		if (!formHost) {
+			return;
+		}
+		['input[name="field_240"]', 'input[id$="-field-240"]'].forEach(function (sel) {
+			Array.prototype.forEach.call(formHost.querySelectorAll(sel), function (el) {
+				el.value = val;
+				el.dispatchEvent(new Event('input', { bubbles: true }));
+				el.dispatchEvent(new Event('change', { bubbles: true }));
+			});
+		});
+	}
+	function parkForm() {
+		if (!formHost) {
+			return;
+		}
+		if (formHome && formHost.parentNode !== formHome) {
+			formHome.appendChild(formHost);
+		}
+		formHost.hidden = true;
+		if (activeTrigger) {
+			activeTrigger.classList.remove('is-open');
+		}
+		activeTrigger = null;
+	}
+	function openForm(trigger, ctx) {
+		if (!formHost) {
+			return;
+		}
+		if (activeTrigger === trigger) {
+			parkForm();
+			return;
+		}
+		setFormContext(ctx);
+		var anchor = trigger.closest('.idf-cta') || trigger;
+		anchor.insertAdjacentElement('afterend', formHost);
+		formHost.hidden = false;
+		if (activeTrigger) {
+			activeTrigger.classList.remove('is-open');
+		}
+		activeTrigger = trigger;
+		trigger.classList.add('is-open');
+		formHost.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	}
+	function bindFormTriggers(list) {
+		var box = document.getElementById('idf-results');
+		if (!box) {
+			return;
+		}
+		Array.prototype.forEach.call(box.querySelectorAll('.idf-form-trigger'), function (btn) {
+			btn.addEventListener('click', function () {
+				var ctx = btn.getAttribute('data-general')
+					? formContext(null)
+					: formContext(list[parseInt(btn.getAttribute('data-idx'), 10)]);
+				openForm(btn, ctx);
+			});
+		});
 	}
 
 	/* ---- filtering (location + language ONLY) ---- */
@@ -260,7 +312,7 @@
 	}
 
 	/* ---- cards + results ---- */
-	function card(d) {
+	function card(d, i) {
 		var clinics = doctorClinics(d);
 		var avatar = d.thumb
 			? '<span class="idf-avatar"><img src="' + esc(d.thumb) + '" alt="' + esc(d.name) + '" loading="lazy"></span>'
@@ -282,7 +334,7 @@
 			(d.sub ? '<div class="idf-sub">' + esc(d.sub) + '</div>' : '') + '</div></div>' +
 			clinicHtml + langHtml + descHtml +
 			'<div class="idf-cta">' +
-			'<a class="idf-btn idf-btn-primary" href="' + doctorWaUrl(d) + '" target="_blank" rel="noopener">' + WA_SVG + ' תיאום בדיקת התאמה</a>' +
+			'<button type="button" class="idf-btn idf-btn-primary idf-form-trigger" data-idx="' + i + '">' + svg('calendar', 18) + ' תיאום בדיקת התאמה</button>' +
 			'<a class="idf-btn idf-btn-secondary" href="' + esc(d.url) + '">לעמוד הרופא</a>' +
 			'</div></article>'
 		);
@@ -293,6 +345,7 @@
 		if (!box) {
 			return;
 		}
+		parkForm();
 		var cityName = answers.location ? centerName(parseInt(answers.location, 10)) : '';
 		var lang = answers.language;
 		var list = filterBy(answers.location, lang);
@@ -310,13 +363,14 @@
 		var notsure = unsure
 			? '<div class="idf-notsure"><h3>עוד לא בטוחים? זה בסדר גמור.</h3>' +
 			'<p>בדיקת התאמה היא הדרך הבטוחה לדעת בדיוק מה מתאים לכם, ללא התחייבות. בינתיים ריכזנו עבורכם את הרופאים הרלוונטיים.</p>' +
-			'<a class="idf-btn idf-btn-white" href="' + waUrl(waMessage('', cityName)) + '" target="_blank" rel="noopener">תיאום בדיקת התאמה</a></div>'
+			'<button type="button" class="idf-btn idf-btn-white idf-form-trigger" data-general="1">תיאום בדיקת התאמה</button></div>'
 			: '';
 
 		if (!list.length) {
 			box.innerHTML =
 				notsure +
 				'<div class="idf-results"><div class="idf-empty">לא נמצאו רופאים מתאימים בסניף הזה. נסו לבחור סניף אחר דרך "שינוי התשובות".</div></div>';
+			bindFormTriggers(list);
 			return;
 		}
 
@@ -333,6 +387,14 @@
 			'<div class="idf-grid">' + list.map(card).join('') + '</div>' +
 			'<div class="idf-disclaimer">' + svg('info', 18) + '<span>המידע כאן עוזר לכם למצוא רופא. ההחלטה על התאמה לטיפול ועל השיטה המתאימה נעשית בבדיקת התאמה אצל הרופא.</span></div>' +
 			'</div>';
+		bindFormTriggers(list);
+	}
+
+	if (formHost) {
+		var formClose = formHost.querySelector('.idf-form-close');
+		if (formClose) {
+			formClose.addEventListener('click', parkForm);
+		}
 	}
 
 	mount();

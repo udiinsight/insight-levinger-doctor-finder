@@ -173,7 +173,6 @@ class Insight_LDF_Finder {
 				'doctors'   => $data['doctors'],
 				'locations' => $data['locations'],
 				'languages' => $data['languages'],
-				'waPhone'   => '972545622619',
 			)
 		);
 
@@ -194,6 +193,14 @@ class Insight_LDF_Finder {
 				</ul>
 			</div>
 		</div>
+		<?php if ( shortcode_exists( 'ws_form' ) ) : ?>
+		<div id="idf-form-host" class="idf-root idf-form-host" dir="rtl" hidden>
+			<div class="idf-form-panel">
+				<button type="button" class="idf-form-close" aria-label="<?php esc_attr_e( 'סגירה', 'insight-levinger-doctor-finder' ); ?>">&times;</button>
+				<?php echo do_shortcode( '[ws_form id="11"]' ); ?>
+			</div>
+		</div>
+		<?php endif; ?>
 		<?php
 		return ob_get_clean();
 	}

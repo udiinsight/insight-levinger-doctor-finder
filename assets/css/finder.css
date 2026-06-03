@@ -116,7 +116,6 @@
 	font-size: 17px;
 	color: var(--muted);
 	margin: 0 auto;
-	max-width: 52ch;
 }
 
 /* wizard card */
@@ -482,4 +481,42 @@
 	.idf-wizard {
 		padding: 22px 18px 24px;
 	}
+}
+
+/* contact form (WS Form 11) revealed inline under the chosen button */
+.idf-form-host {
+	margin-top: 16px;
+}
+.idf-form-host[hidden] {
+	display: none;
+}
+.idf-form-panel {
+	position: relative;
+	background: #fff;
+	border: 1px solid var(--line);
+	border-radius: var(--r-md);
+	box-shadow: var(--shadow-md);
+	padding: 26px 22px 20px;
+	text-align: right;
+}
+.idf-form-close {
+	position: absolute;
+	inset-inline-end: 12px;
+	top: 12px;
+	width: 30px;
+	height: 30px;
+	border: none;
+	background: var(--blue-050);
+	color: var(--blue-600);
+	border-radius: 50%;
+	font-size: 20px;
+	line-height: 1;
+	cursor: pointer;
+	transition: background 0.18s var(--ease);
+}
+.idf-form-close:hover {
+	background: var(--blue-100);
+}
+.idf-btn.idf-form-trigger.is-open {
+	opacity: 0.65;
 }
