@@ -40,13 +40,12 @@
 
 	/* ---- steps. filter:true means it narrows the doctor list. ---- */
 	var STEPS = {
-		goal: { q: 'מה תרצו לשפר?', opts: [
+		goal: { q: 'מה תרצו לשפר?', hint: 'יש לך צילינדר? נשאל על כך בהמשך.', opts: [
 			{ v: 'distance', icon: 'eye', label: 'ראייה למרחק', desc: 'נהיגה, שלטים, טלוויזיה' },
-			{ v: 'near', icon: 'book', label: 'גם קריאה מקרוב', desc: 'ספר, טלפון, מסך' },
-			{ v: 'not_sure', icon: 'help', label: 'עוד לא יודע/ת', desc: 'רוצה לבדוק מה מתאים' }
+			{ v: 'near', icon: 'book', label: 'ראייה מקרוב', desc: 'ספר, טלפון, מסך' }
 		] },
 		age: { q: 'מה טווח הגיל שלכם?', opts: [
-			{ v: 'u40', label: 'עד 40' }, { v: '40_55', label: '40 עד 55' }, { v: '55', label: '55 ומעלה' }
+			{ v: 'u40', label: 'עד 40' }, { v: '40_50', label: '40 עד 50' }, { v: '50', label: '50 ומעלה' }
 		] },
 		wear: { q: 'מה אתם מרכיבים היום?', opts: [
 			{ v: 'glasses', icon: 'glasses', label: 'משקפיים' }, { v: 'contacts', icon: 'lens', label: 'עדשות מגע' }, { v: 'both', icon: 'layers', label: 'שניהם' }
@@ -70,8 +69,17 @@
 			});
 		}
 		if (step.dynamic === 'language') {
+			var loc = answers.location ? parseInt(answers.location, 10) : null;
+			var seen = {};
+			DATA.doctors.forEach(function (d) {
+				if (loc && (d.centers || []).indexOf(loc) === -1) {
+					return;
+				}
+				(d.langs || []).forEach(function (l) { seen[l] = true; });
+			});
+			var avail = DATA.languages.filter(function (l) { return seen[l]; });
 			return [{ v: '', label: 'אין העדפה' }].concat(
-				DATA.languages.map(function (l) {
+				avail.map(function (l) {
 					return { v: l, label: l };
 				})
 			);
@@ -80,12 +88,22 @@
 	}
 
 	function sequence() {
-		var s = ['goal'];
-		if (answers.goal !== 'not_sure') {
-			s.push('age', 'wear', 'rx', 'cyl');
+		return ['goal', 'age', 'wear', 'rx', 'cyl', 'location', 'language'];
+	}
+
+	/* ---- eligibility gates: show a message instead of doctors ---- */
+	var GATE = {
+		near40: 'אחרי גיל 40 הראייה מקרוב משתנה באופן טבעי, וניתוח לייזר אינו המענה לכך. אל דאגה. יש פתרונות אחרים, ונעזור לכם למצוא את המתאים.',
+		age50: 'מגיל 50 העין עוברת שינויים טבעיים, וניתוח להסרת משקפיים בלייזר כבר אינו הפתרון המיטבי. אל דאגה. קיימים פתרונות אחרים שמתאימים יותר לגיל הזה, ונשמח להכווין אתכם לאפשרות הנכונה עבורכם.'
+	};
+	function gateMessage() {
+		if (answers.age === '50') {
+			return GATE.age50;
 		}
-		s.push('location', 'language');
-		return s;
+		if (answers.goal === 'near' && answers.age === '40_50') {
+			return GATE.near40;
+		}
+		return null;
 	}
 
 	/* ---- helpers ---- */
@@ -118,6 +136,19 @@
 	}
 	function doctorClinics(d) {
 		return (d.centers || []).map(centerName).filter(Boolean);
+	}
+	/* full clinic names for the cards; selection buttons keep the short center names */
+	var CENTER_DISPLAY = {
+		'תל אביב': 'תל אביב - עזריאלי',
+		'חיפה': 'חיפה - חוצות המפרץ',
+		'באר שבע': 'באר שבע (שבע עיניים)'
+	};
+	function centerDisplay(id) {
+		var n = centerName(id);
+		return CENTER_DISPLAY[n] || n;
+	}
+	function doctorClinicsDisplay(d) {
+		return (d.centers || []).map(centerDisplay).filter(Boolean);
 	}
 
 	/* ---- context string for the hidden form field (id 240): doctor + clinic + answers ---- */
@@ -184,7 +215,7 @@
 			return;
 		}
 		setFormContext(ctx);
-		var anchor = trigger.closest('.idf-cta') || trigger;
+		var anchor = trigger.closest('.idf-cta') || trigger.closest('.idf-gate-cta') || trigger;
 		anchor.insertAdjacentElement('afterend', formHost);
 		formHost.hidden = false;
 		if (activeTrigger) {
@@ -234,11 +265,12 @@
 		root.innerHTML =
 			'<div class="idf-app">' +
 			'<div class="idf-head"><span class="idf-eyebrow">' + svg('sparkle', 15) + ' התאמת רופא אישית</span><h1>מצאו את הרופא המתאים לכם</h1><p>ענו על כמה שאלות קצרות, ואנחנו נמצא עבורכם את הרופאים המתאימים.</p></div>' +
-			'<div class="idf-wizard">' +
+			'<div class="idf-wizard" id="idf-wizard">' +
 			'<div id="idf-question">' +
 			'<div class="idf-progress-row"><span class="idf-step-lbl" id="idf-steplbl"></span><button type="button" class="idf-back" id="idf-back" style="visibility:hidden">חזרה ←</button></div>' +
 			'<div class="idf-pbar"><span id="idf-pbar" style="width:0%"></span></div>' +
 			'<div class="idf-qtitle" id="idf-qtitle"></div>' +
+			'<div class="idf-qhint" id="idf-qhint" style="display:none"></div>' +
 			'<div class="idf-opts" id="idf-opts"></div>' +
 			'</div>' +
 			'<div class="idf-done" id="idf-done" style="display:none">' +
@@ -274,6 +306,9 @@
 		document.getElementById('idf-pbar').style.width = (stepIdx / seq.length) * 100 + '%';
 		document.getElementById('idf-back').style.visibility = stepIdx === 0 ? 'hidden' : 'visible';
 		document.getElementById('idf-qtitle').textContent = step.q;
+		var hintEl = document.getElementById('idf-qhint');
+		hintEl.textContent = step.hint || '';
+		hintEl.style.display = step.hint ? 'block' : 'none';
 		document.getElementById('idf-opts').innerHTML = opts
 			.map(function (o) {
 				return (
@@ -289,6 +324,10 @@
 			btn.addEventListener('click', function () {
 				var k = sequence()[stepIdx];
 				answers[k] = btn.getAttribute('data-val');
+				if (k === 'age' && gateMessage()) {
+					finish();
+					return;
+				}
 				var seq2 = sequence();
 				if (stepIdx >= seq2.length - 1) {
 					finish();
@@ -302,8 +341,14 @@
 
 	function finish() {
 		document.getElementById('idf-question').style.display = 'none';
-		document.getElementById('idf-done').style.display = 'block';
-		document.getElementById('idf-pbar').style.width = '100%';
+		var wizard = document.getElementById('idf-wizard');
+		if (gateMessage()) {
+			wizard.style.display = 'none';
+		} else {
+			wizard.style.display = '';
+			document.getElementById('idf-done').style.display = 'block';
+			document.getElementById('idf-pbar').style.width = '100%';
+		}
 		renderResults();
 		var r = document.getElementById('idf-results');
 		if (r && r.scrollIntoView) {
@@ -311,9 +356,18 @@
 		}
 	}
 
+	function gateEdit() {
+		parkForm();
+		document.getElementById('idf-results').innerHTML = '';
+		document.getElementById('idf-wizard').style.display = '';
+		stepIdx = 0;
+		renderStep();
+		document.getElementById('idf-question').scrollIntoView({ behavior: 'smooth', block: 'center' });
+	}
+
 	/* ---- cards + results ---- */
 	function card(d, i) {
-		var clinics = doctorClinics(d);
+		var clinics = doctorClinicsDisplay(d);
 		var avatar = d.thumb
 			? '<span class="idf-avatar"><img src="' + esc(d.thumb) + '" alt="' + esc(d.name) + '" loading="lazy"></span>'
 			: '<span class="idf-avatar">' + esc(initials(d.name)) + '</span>';
@@ -346,6 +400,23 @@
 			return;
 		}
 		parkForm();
+		var gate = gateMessage();
+		if (gate) {
+			box.innerHTML =
+				'<div class="idf-results"><div class="idf-gate">' +
+				'<div class="idf-gate-ico">' + svg('info', 26) + '</div>' +
+				'<p class="idf-gate-text">' + esc(gate) + '</p>' +
+				'<div class="idf-gate-cta">' +
+				'<button type="button" class="idf-btn idf-btn-primary idf-form-trigger" data-general="1">' + svg('calendar', 18) + ' לתיאום ייעוץ</button>' +
+				'<button type="button" class="idf-btn idf-btn-secondary" id="idf-gate-edit">שינוי התשובות</button>' +
+				'</div></div></div>';
+			bindFormTriggers([]);
+			var ge = document.getElementById('idf-gate-edit');
+			if (ge) {
+				ge.addEventListener('click', gateEdit);
+			}
+			return;
+		}
 		var cityName = answers.location ? centerName(parseInt(answers.location, 10)) : '';
 		var lang = answers.language;
 		var list = filterBy(answers.location, lang);
@@ -357,18 +428,10 @@
 				relaxedLang = true;
 			}
 		}
-		var unsure = answers.goal === 'not_sure';
 		var cityTxt = cityName ? ' ב' + cityName : '';
-
-		var notsure = unsure
-			? '<div class="idf-notsure"><h3>עוד לא בטוחים? זה בסדר גמור.</h3>' +
-			'<p>בדיקת התאמה היא הדרך הבטוחה לדעת בדיוק מה מתאים לכם, ללא התחייבות. בינתיים ריכזנו עבורכם את הרופאים הרלוונטיים.</p>' +
-			'<button type="button" class="idf-btn idf-btn-white idf-form-trigger" data-general="1">תיאום בדיקת התאמה</button></div>'
-			: '';
 
 		if (!list.length) {
 			box.innerHTML =
-				notsure +
 				'<div class="idf-results"><div class="idf-empty">לא נמצאו רופאים מתאימים בסניף הזה. נסו לבחור סניף אחר דרך "שינוי התשובות".</div></div>';
 			bindFormTriggers(list);
 			return;
@@ -379,10 +442,9 @@
 			: '';
 
 		box.innerHTML =
-			notsure +
 			'<div class="idf-results">' +
 			langNote +
-			'<div class="idf-rhead"><h2>' + (unsure ? 'רופאים רלוונטיים' : 'הרופאים שעשויים להתאים לכם') + esc(cityTxt) + '</h2>' +
+			'<div class="idf-rhead"><h2>הרופאים שמתאימים לכם' + esc(cityTxt) + '</h2>' +
 			'<div class="idf-count">מציג ' + list.length + ' רופאים</div></div>' +
 			'<div class="idf-grid">' + list.map(card).join('') + '</div>' +
 			'<div class="idf-disclaimer">' + svg('info', 18) + '<span>המידע כאן עוזר לכם למצוא רופא. ההחלטה על התאמה לטיפול ועל השיטה המתאימה נעשית בבדיקת התאמה אצל הרופא.</span></div>' +

@@ -297,32 +297,6 @@
 	color: var(--muted);
 	margin-top: 3px;
 }
-.idf-notsure {
-	background: linear-gradient(135deg, var(--blue-700), var(--blue-500));
-	color: #fff;
-	border-radius: var(--r-lg);
-	padding: 24px 26px;
-	margin-bottom: 22px;
-	box-shadow: var(--shadow-md);
-}
-.idf-notsure h3 {
-	font-weight: 500;
-	font-size: 20px;
-	margin: 0 0 8px;
-}
-.idf-notsure p {
-	font-size: 15.5px;
-	opacity: 0.92;
-	margin: 0 0 16px;
-	max-width: 56ch;
-}
-.idf-btn-white {
-	background: #fff;
-	color: var(--blue-600);
-}
-.idf-btn-white:hover {
-	background: var(--blue-050);
-}
 .idf-empty {
 	background: var(--blue-050);
 	border: 1px solid var(--blue-100);
@@ -494,29 +468,166 @@
 	position: relative;
 	background: #fff;
 	border: 1px solid var(--line);
-	border-radius: var(--r-md);
+	border-radius: var(--r-lg);
 	box-shadow: var(--shadow-md);
-	padding: 26px 22px 20px;
+	padding: 46px 20px 24px;
 	text-align: right;
 }
 .idf-form-close {
 	position: absolute;
 	inset-inline-end: 12px;
 	top: 12px;
-	width: 30px;
-	height: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
 	border: none;
 	background: var(--blue-050);
 	color: var(--blue-600);
 	border-radius: 50%;
-	font-size: 20px;
+	font-size: 22px;
 	line-height: 1;
 	cursor: pointer;
+	z-index: 2;
 	transition: background 0.18s var(--ease);
 }
 .idf-form-close:hover {
 	background: var(--blue-100);
+	color: var(--blue-700);
 }
 .idf-btn.idf-form-trigger.is-open {
 	opacity: 0.65;
+}
+
+/* WS Form 11 styled to match the finder design system (scoped by #id to beat WS Form CSS) */
+#idf-form-host .wsf-field-wrapper {
+	margin-bottom: 14px;
+}
+#idf-form-host .wsf-field-wrapper.wsf-bottom {
+	margin-bottom: 0;
+}
+#idf-form-host .wsf-label {
+	display: block;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--faint);
+	margin-bottom: 8px;
+}
+#idf-form-host input.wsf-field[type="text"],
+#idf-form-host input.wsf-field[type="tel"],
+#idf-form-host input.wsf-field[type="email"],
+#idf-form-host input.wsf-field[type="number"],
+#idf-form-host textarea.wsf-field,
+#idf-form-host select.wsf-field {
+	width: 100%;
+	font-family: var(--font);
+	font-size: 16px;
+	color: var(--ink);
+	background: #fff;
+	border: 1.5px solid var(--line);
+	border-radius: var(--r-md);
+	padding: 13px 16px;
+	transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+#idf-form-host input.wsf-field::placeholder,
+#idf-form-host textarea.wsf-field::placeholder {
+	color: var(--faint);
+	opacity: 1;
+}
+#idf-form-host input.wsf-field:focus,
+#idf-form-host textarea.wsf-field:focus,
+#idf-form-host select.wsf-field:focus {
+	outline: none;
+	border-color: var(--blue-500);
+	box-shadow: 0 0 0 3px var(--blue-100);
+}
+#idf-form-host input[type="checkbox"].wsf-field,
+#idf-form-host input[type="radio"].wsf-field {
+	width: 18px;
+	height: 18px;
+	accent-color: var(--blue-500);
+	margin-inline-start: 8px;
+	vertical-align: -3px;
+}
+#idf-form-host [data-type="checkbox"] .wsf-label,
+#idf-form-host [data-type="radio"] .wsf-label {
+	color: var(--body);
+	font-weight: 500;
+}
+#idf-form-host [data-row-checkbox] label {
+	font-size: 14px;
+	color: var(--body);
+	line-height: 1.5;
+}
+#idf-form-host .wsf-button {
+	width: 100%;
+	font-family: var(--font);
+	font-weight: 500;
+	font-size: 16px;
+	color: #fff;
+	background: var(--blue-500);
+	border: none;
+	border-radius: var(--r-pill);
+	padding: 14px 26px;
+	box-shadow: var(--shadow-blue);
+	cursor: pointer;
+	transition: background 0.18s var(--ease);
+}
+#idf-form-host .wsf-button:hover {
+	background: var(--blue-600);
+}
+#idf-form-host .wsf-invalid-feedback {
+	color: #c0392b;
+	font-size: 12.5px;
+	margin-top: 5px;
+}
+
+/* goal-step microcopy hint */
+.idf-qhint {
+	text-align: center;
+	font-size: 13.5px;
+	color: var(--muted);
+	margin: -16px auto 24px;
+	max-width: 44ch;
+}
+
+/* eligibility gate (no-fit message instead of doctor cards) */
+.idf-gate {
+	background: var(--blue-050);
+	border: 1px solid var(--blue-100);
+	border-radius: var(--r-lg);
+	padding: 30px 26px;
+	text-align: center;
+}
+.idf-gate-ico {
+	width: 58px;
+	height: 58px;
+	border-radius: 50%;
+	background: var(--blue-100);
+	color: var(--blue-500);
+	display: grid;
+	place-items: center;
+	margin: 0 auto 16px;
+}
+.idf-gate-text {
+	font-size: 17px;
+	line-height: 1.7;
+	color: var(--ink);
+	margin: 0 auto 22px;
+	max-width: 54ch;
+}
+.idf-gate-cta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	justify-content: center;
+}
+.idf-gate-cta .idf-btn {
+	min-width: 210px;
+}
+/* hide the gate's reveal button once its form is open */
+.idf-gate-cta .idf-form-trigger.is-open {
+	display: none;
 }
