@@ -1,7 +1,7 @@
 /* ============================================================
    Insight - Levinger - Doctor Finder (front-end)
    Vanilla JS. Reads window.INSIGHT_LDF (localized by PHP).
-   Stepped wizard: goal → age → glasses/contacts → number → cylinder
+   Stepped wizard: goal → cylinder → age → glasses/contacts → number
    → location → language → results.
    ONLY location + language filter the doctor list. The other answers are
    collected for personalization and passed into the contact form (WS Form 11).
@@ -40,12 +40,13 @@
 
 	/* ---- steps. filter:true means it narrows the doctor list. ---- */
 	var STEPS = {
-		goal: { q: 'מה תרצו לשפר?', hint: 'יש לך צילינדר? נשאל על כך בהמשך.', opts: [
+		goal: { q: 'מה תרצו לתקן?', opts: [
 			{ v: 'distance', icon: 'eye', label: 'ראייה למרחק', desc: 'נהיגה, שלטים, טלוויזיה' },
-			{ v: 'near', icon: 'book', label: 'ראייה מקרוב', desc: 'ספר, טלפון, מסך' }
+			{ v: 'near', icon: 'book', label: 'ראייה מקרוב', desc: 'ספר, טלפון, מסך' },
+			{ v: 'cylinder', icon: 'lens', label: 'צילינדר', desc: 'אסטיגמציה' }
 		] },
 		age: { q: 'מה טווח הגיל שלכם?', opts: [
-			{ v: 'u40', label: 'עד 40' }, { v: '40_50', label: '40 עד 50' }, { v: '50', label: '50 ומעלה' }
+			{ v: 'u55', label: 'עד 55' }, { v: '55up', label: '55 ומעלה' }
 		] },
 		wear: { q: 'מה אתם מרכיבים היום?', opts: [
 			{ v: 'glasses', icon: 'glasses', label: 'משקפיים' }, { v: 'contacts', icon: 'lens', label: 'עדשות מגע' }, { v: 'both', icon: 'layers', label: 'שניהם' }
@@ -55,7 +56,7 @@
 			{ v: 'high', label: 'גבוה', desc: '6 ומעלה' }, { v: 'unknown', label: 'לא ידוע לי' }
 		] },
 		cyl: { q: 'צילינדר (אסטיגמציה)?', opts: [
-			{ v: 'yes', label: 'יש לי' }, { v: 'no', label: 'אין' }, { v: 'unknown', label: 'לא יודע/ת' }
+			{ v: 'yes', label: 'יש' }, { v: 'no', label: 'אין' }, { v: 'unknown', label: 'לא יודע/ת' }
 		] },
 		location: { q: 'איפה נוח לכם?', filter: true, dynamic: 'location' },
 		language: { q: 'הרופא שלי חייב לדבר', filter: true, dynamic: 'language' }
@@ -88,16 +89,20 @@
 	}
 
 	function sequence() {
-		return ['goal', 'age', 'wear', 'rx', 'cyl', 'location', 'language'];
+		var seq = ['goal', 'cyl', 'age', 'wear', 'rx', 'location', 'language'];
+		if (answers.goal === 'cylinder') {
+			seq = seq.filter(function (k) { return k !== 'cyl'; });
+		}
+		return seq;
 	}
 
 	/* ---- eligibility gates: show a message instead of doctors ---- */
 	var GATE = {
 		near40: 'אחרי גיל 40 הראייה מקרוב משתנה באופן טבעי, וניתוח לייזר אינו המענה לכך. אל דאגה. יש פתרונות אחרים, ונעזור לכם למצוא את המתאים.',
-		age50: 'מגיל 50 העין עוברת שינויים טבעיים, וניתוח להסרת משקפיים בלייזר כבר אינו הפתרון המיטבי. אל דאגה. קיימים פתרונות אחרים שמתאימים יותר לגיל הזה, ונשמח להכווין אתכם לאפשרות הנכונה עבורכם.'
+		age50: 'מגיל 56 ומעלה המשך התהליך עובר לפגישת ייעוץ מותאמת אישית'
 	};
 	function gateMessage() {
-		if (answers.age === '50') {
+		if (answers.age === '55up') {
 			return GATE.age50;
 		}
 		if (answers.goal === 'near' && answers.age === '40_50') {
