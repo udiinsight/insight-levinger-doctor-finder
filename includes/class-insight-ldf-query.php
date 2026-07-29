@@ -33,7 +33,7 @@ class Insight_LDF_Query {
 	/**
 	 * Transient cache key (bump suffix when the data shape changes).
 	 */
-	const CACHE_KEY = 'insight_ldf_data_v1';
+	const CACHE_KEY = 'insight_ldf_data_v2';
 
 	/**
 	 * Return the cached dataset, building it on a miss.
@@ -117,7 +117,7 @@ class Insight_LDF_Query {
 			'post_status'    => 'publish',
 			'posts_per_page' => -1,
 			'no_found_rows'  => true,
-			'orderby'        => 'title',
+			'orderby'        => 'menu_order',
 			'order'          => 'ASC',
 			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 				array(
@@ -178,6 +178,7 @@ class Insight_LDF_Query {
 				'centers' => array_values( array_unique( $doc_centers ) ),
 				'url'     => get_permalink( $id ),
 				'thumb'   => $thumb ? $thumb : '',
+				'order'   => (int) $post->menu_order,
 			);
 		}
 

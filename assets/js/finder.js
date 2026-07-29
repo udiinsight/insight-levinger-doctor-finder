@@ -99,7 +99,7 @@
 	/* ---- eligibility gates: show a message instead of doctors ---- */
 	var GATE = {
 		near40: 'אחרי גיל 40 הראייה מקרוב משתנה באופן טבעי, וניתוח לייזר אינו המענה לכך. אל דאגה. יש פתרונות אחרים, ונעזור לכם למצוא את המתאים.',
-		age50: 'מגיל 56 ומעלה המשך התהליך עובר לפגישת ייעוץ מותאמת אישית'
+		age50: 'מגיל 55 ומעלה יש לתאם פגישת ייעוץ מותאמת אישית הכרוכה בתשלום.'
 	};
 	function gateMessage() {
 		if (answers.age === '55up') {
@@ -260,10 +260,11 @@
 				return (d.langs || []).indexOf(lang) !== -1;
 			});
 		}
-		return list
-			.map(function (d) { return { d: d, r: Math.random() }; })
-			.sort(function (a, b) { return a.r - b.r; })
-			.map(function (o) { return o.d; });
+		return list.sort(function (a, b) {
+			var ao = a.order > 0 ? a.order : 1e9;
+			var bo = b.order > 0 ? b.order : 1e9;
+			return ao - bo;
+		});
 	}
 
 	/* ---- shell ---- */
