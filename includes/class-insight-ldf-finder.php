@@ -164,15 +164,21 @@ class Insight_LDF_Finder {
 
 		$data = Insight_LDF_Query::get_data();
 
+		// WS Form + context field IDs differ per environment (live: 12/221, staging: 11/240).
+		// Override with the filters below (e.g. on staging) instead of hardcoding.
+		$form_id  = (int) apply_filters( 'insight_ldf_form_id', 12 );
+		$field_id = (int) apply_filters( 'insight_ldf_context_field_id', 221 );
+
 		wp_enqueue_style( self::HANDLE );
 		wp_enqueue_script( self::HANDLE );
 		wp_localize_script(
 			self::HANDLE,
 			'INSIGHT_LDF',
 			array(
-				'doctors'   => $data['doctors'],
-				'locations' => $data['locations'],
-				'languages' => $data['languages'],
+				'doctors'      => $data['doctors'],
+				'locations'    => $data['locations'],
+				'languages'    => $data['languages'],
+				'contextField' => $field_id,
 			)
 		);
 
@@ -197,7 +203,7 @@ class Insight_LDF_Finder {
 		<div id="idf-form-host" class="idf-root idf-form-host" dir="rtl" hidden>
 			<div class="idf-form-panel">
 				<button type="button" class="idf-form-close" aria-label="<?php esc_attr_e( 'סגירה', 'insight-levinger-doctor-finder' ); ?>">&times;</button>
-				<?php echo do_shortcode( '[ws_form id="11"]' ); ?>
+				<?php echo do_shortcode( '[ws_form id="' . $form_id . '"]' ); ?>
 			</div>
 		</div>
 		<?php endif; ?>

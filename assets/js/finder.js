@@ -156,7 +156,7 @@
 		return (d.centers || []).map(centerDisplay).filter(Boolean);
 	}
 
-	/* ---- context string for the hidden form field (id 240): doctor + clinic + answers ---- */
+	/* ---- context string for the hidden form field: doctor + clinic + answers ---- */
 	function formContext(d) {
 		var clinic = answers.location ? centerName(parseInt(answers.location, 10)) : '';
 		if (d && !clinic) {
@@ -186,11 +186,12 @@
 	var formHome = formHost ? formHost.parentNode : null;
 	var activeTrigger = null;
 
+	var CTX_FIELD = (DATA.contextField != null) ? DATA.contextField : 240;
 	function setFormContext(val) {
 		if (!formHost) {
 			return;
 		}
-		['input[name="field_240"]', 'input[id$="-field-240"]'].forEach(function (sel) {
+		['input[name="field_' + CTX_FIELD + '"]', 'input[id$="-field-' + CTX_FIELD + '"]'].forEach(function (sel) {
 			Array.prototype.forEach.call(formHost.querySelectorAll(sel), function (el) {
 				el.value = val;
 				el.dispatchEvent(new Event('input', { bubbles: true }));
