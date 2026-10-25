@@ -271,7 +271,7 @@
 	function mount() {
 		root.innerHTML =
 			'<div class="idf-app">' +
-			'<div class="idf-head"><span class="idf-eyebrow">' + svg('sparkle', 15) + ' התאמת רופא אישית</span><h1>מצאו את הרופא המתאים לכם</h1><p>ענו על כמה שאלות קצרות, ואנחנו נמצא עבורכם את הרופאים המתאימים.</p></div>' +
+			'<div class="idf-head"><span class="idf-eyebrow">התאמת רופא אישית</span><h2>מצאו את הרופא המתאים לכם</h2><p>ענו על כמה שאלות קצרות, ואנחנו נמצא עבורכם את הרופאים המתאימים.</p></div>' +
 			'<div class="idf-wizard" id="idf-wizard">' +
 			'<div id="idf-question">' +
 			'<div class="idf-progress-row"><span class="idf-step-lbl" id="idf-steplbl"></span><button type="button" class="idf-back" id="idf-back" style="visibility:hidden">חזרה ←</button></div>' +
