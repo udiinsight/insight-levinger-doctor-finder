@@ -30,6 +30,9 @@ Built to the Dr. Levinger Design System (blue #104DA8, FB Reforma, RTL).
 
 == Changelog ==
 
+= 1.6.1 =
+* Exclude Dr. Yitzhak Eisenman (4059) from the finder: he examines but does not operate. Exclusions are filterable via `insight_ldf_excluded_doctor_ids`.
+
 = 1.1.6 =
 * fix: bake asset version into the URL as ?v= (WP Rocket strips ?ver= on this host). This finally lets CSS/JS updates reach browsers — header, no-all, and language-fallback changes now render.
 

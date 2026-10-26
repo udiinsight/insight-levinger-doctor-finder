@@ -31,6 +31,13 @@ class Insight_LDF_Query {
 	const LASER_CENTER_IDS = array( 211, 214, 208, 212 );
 
 	/**
+	 * Doctors related to the procedure who must not be offered in the finder.
+	 * 4059 Dr. Yitzhak Eisenman examines but does not operate (client request 2026-10-26).
+	 * Filterable via `insight_ldf_excluded_doctor_ids`.
+	 */
+	const EXCLUDED_DOCTOR_IDS = array( 4059 );
+
+	/**
 	 * Transient cache key (bump suffix when the data shape changes).
 	 */
 	const CACHE_KEY = 'insight_ldf_data_v2';
@@ -76,6 +83,15 @@ class Insight_LDF_Query {
 	}
 
 	/**
+	 * Doctor IDs excluded from the finder.
+	 *
+	 * @return int[]
+	 */
+	public static function excluded_doctor_ids() {
+		return array_map( 'intval', (array) apply_filters( 'insight_ldf_excluded_doctor_ids', self::EXCLUDED_DOCTOR_IDS ) );
+	}
+
+	/**
 	 * Clean, short display label for a center (chips + card clinic line). Falls back to
 	 * the post title for any center not in the map. Filterable.
 	 *
@@ -117,6 +133,7 @@ class Insight_LDF_Query {
 			'post_status'    => 'publish',
 			'posts_per_page' => -1,
 			'no_found_rows'  => true,
+			'post__not_in'   => self::excluded_doctor_ids(), // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in
 			'orderby'        => 'menu_order',
 			'order'          => 'ASC',
 			'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
